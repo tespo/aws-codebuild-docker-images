@@ -280,9 +280,10 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 
-ENV DOCKER_SHA256="3865F837DBD951B19EEB5F7D87AADA2E865B2017E9462FE389F0E5D9A438324D"
-ENV DOCKER_VERSION="23.0.1"
-ENV DOCKER_COMPOSE_VERSION="2.17.2"
+ENV DOCKER_SHA256="d9f58aecc42451503e82e6e0562cafa1812b334c92186a7f486e111e70a0f5bd"
+ENV DOCKER_VERSION="24.0.6"
+ENV DOCKER_COMPOSE_VERSION="2.22.0"
+ENV DOCKER_BUILDX_VERSION="0.11.2"
 
 VOLUME /var/lib/docker
 
@@ -300,9 +301,17 @@ RUN set -ex \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
     && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-aarch64 > /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
+    # Add docker buildx tool \
+    && mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-arm-v6 > /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && ln -s /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/bin/docker-buildx \
     # Ensure docker-compose works
-    && docker-compose version
+    && docker-compose version \
+    # Ensure docker-buildx works
+    && docker-buildx version \
+    && docker buildx version
+
 
 #=======================End of layer: runtimes_2  =================
 FROM runtimes_2 AS runtimes_3
@@ -341,7 +350,7 @@ COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc
 COPY legal/bill_of_material.txt /usr/share/doc
 COPY amazon-ssm-agent.json /etc/amazon/ssm/
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
 #=======================End of layer: aarch64_v2  =================
 

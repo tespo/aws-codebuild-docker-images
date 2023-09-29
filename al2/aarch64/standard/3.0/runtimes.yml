@@ -14,13 +14,13 @@ runtimes:
           - export JDK_HOME="$JDK_17_HOME"
 
           - |-
-            for tool_path in "$JAVA_HOME"/bin/*; 
+            for tool_path in "$JAVA_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
-              if [ $tool != 'java-rmi.cgi' ]; 
-              then 
+              if [ $tool != 'java-rmi.cgi' ];
+              then
                rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-              fi; 
+              fi;
             done
   golang:
     versions:
@@ -55,9 +55,9 @@ runtimes:
           - n $NODE_18_VERSION
   docker:
     versions:
-      23:
+      24:
         commands:
-          - echo "Using Docker 23"
+          - echo "Using Docker 24"
   dotnet:
     versions:
       6.0:
